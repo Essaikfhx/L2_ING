@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>حاسبة معدل هندسة العمليات - S4</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --accent-color: #27ae60;
+            --bg-color: #f4f7f6;
+            --text-color: #333;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--primary-color);
+            border-bottom: 3px solid var(--accent-color);
+            padding-bottom: 10px;
+        }
+
+        .summary-card {
+            background: var(--primary-color);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .average-display {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #2ecc71;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 12px;
+        }
+
+        td {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+            text-align: center;
+        }
+
+        input {
+            width: 60px;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            text-align: center;
+        }
+
+        .module-name {
+            text-align: right;
+            font-weight: bold;
+        }
+
+        @media (max-width: 600px) {
+            input { width: 45px; }
+            th, td { font-size: 0.8rem; padding: 5px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>calculator of S4📟</h1>
+    
+    <div class="summary-card">
+        <div>المعدل العام للسداسي S4</div>
+        <div class="average-display" id="total-average">0.00</div>
+    </div>
+
+    <table id="modules-table">
+        <thead>
+            <tr>
+                <th>المادة</th>
+                <th>المعامل</th>
+                <th>TD</th>
+                <th>TP</th>
+                <th>Exam</th>
+                <th>معدل المادة</th>
+            </tr>
+        </thead>
+        <tbody id="table-body">
+            </tbody>
+    </table>
+</div>
+
+<script>
+    const modules = [
+        {name: "Chimie minérale", coeff: 3, td: 0, tp: 0},
+        {name: "Cinétique chimique", coeff: 3, td: 0, tp: 0},
+        {name: "Transfert de chaleur", coeff: 2, td: 0, tp: null},
+        {name: "Transfert de matière", coeff: 2, td: 0, tp: null},
+        {name: "Thermodynamique", coeff: 2, td: 0, tp: null},
+        {name: "DAO", coeff: 2, td: null, tp: 0},
+        {name: "Méthodes numériques", coeff: 2, td: null, tp: 0},
+        {name: "Quantité de mouvement", coeff: 1, td: null, tp: null},
+        {name: "Raffinage & pétrochimie", coeff: 1, td: null, tp: null},
+        {name: "Techniques de comm", coeff: 1, td: 0, tp: null}
+    ];
+
+    function renderTable() {
+        const body = document.getElementById('table-body');
+        modules.forEach((mod, index) => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td class="module-name">${mod.name}</td>
+                <td>${mod.coeff}</td>
+                <td>${mod.td !== null ? `<input type="number" value="${mod.td}" oninput="calculate()" id="td-${index}">` : '-'}</td>
+                <td>${mod.tp !== null ? `<input type="number" value="${mod.tp}" oninput="calculate()" id="tp-${index}">` : '-'}</td>
+                <td><input type="number" value="0" oninput="calculate()" id="exam-${index}"></td>
+                <td id="avg-${index}" style="font-weight:bold">0.00</td>
+            `;
+            body.appendChild(row);
+        });
+        calculate();
+    }
+
+    function calculate() {
+        let totalWeightedSum = 0;
+        let totalCoeff = 0;
+
+        modules.forEach((mod, index) => {
+            const exam = parseFloat(document.getElementById(`exam-${index}`).value) || 0;
+            const tdInput = document.getElementById(`td-${index}`);
+            const tpInput = document.getElementById(`tp-${index}`);
+            
+            const td = tdInput ? parseFloat(tdInput.value) || 0 : null;
+            const tp = tpInput ? parseFloat(tpInput.value) || 0 : null;
+
+            let modAvg = 0;
+            if (td !== null && tp !== null) {
+                modAvg = (exam * 0.6) + (td * 0.2) + (tp * 0.2);
+            } else if (td !== null) {
+                modAvg = (exam * 0.6) + (td * 0.4);
+            } else if (tp !== null) {
+                modAvg = (exam * 0.6) + (tp * 0.4);
+            } else {
+                modAvg = exam;
+            }
+
+            document.getElementById(`avg-${index}`).innerText = modAvg.toFixed(2);
+            totalWeightedSum += modAvg * mod.coeff;
+            totalCoeff += mod.coeff;
+        });
+
+        const finalAvg = totalWeightedSum / totalCoeff;
+        document.getElementById('total-average').innerText = finalAvg.toFixed(2);
+    }
+
+    window.onload = renderTable;
+</script>
+
+</body>
+</html>
